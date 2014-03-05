@@ -10,12 +10,12 @@ if !filereadable(highlight_file)
   call system("mkdir -p ".&viewdir)
   call system("echo 'call clearmatches()' > ".highlight_file)
 endif
-autocmd BufReadPost * silent! exec "source ".highlight_file
+autocmd BufReadPost,WinEnter * silent! exec "source ".highlight_file
 
 function! s:highlight(x)
   let l:wrap = &wrap | set nowrap
   exec ":new ".g:highlight_file
-    silent exec "%!grep -v ' ".s:group(a:x)." '"
+    silent exec "%!grep -v '\\<".s:group(a:x)."\\>'"
     normal G
     exec "normal ohighlight ".s:group(a:x)." ctermfg=".s:randomColor()
     if match(a:x, '\W') == -1
@@ -31,7 +31,7 @@ endfunction
 function! s:unhighlight(x)
   let l:wrap = &wrap | set nowrap
   exec ":new ".g:highlight_file
-    silent exec "%!grep -v ' ".s:group(a:x)." '"
+    silent exec "%!grep -v '\\<".s:group(a:x)."\\>'"
   write | bdelete
   if l:wrap | set wrap | endif
   exec "source ".g:highlight_file
@@ -61,6 +61,7 @@ map _ :Unhighlight <C-r><C-w><CR>
 "   repeatedly highlighting a single word should give uniformly random colors
 "   should start up with non-existent viewdir
 "   should handle phrases with special chars, except single quotes (md5sum)
+"   should continue to highlight on both windows after :split
 "
 " Minor issues:
 "   Color might sometimes be hard to see. Just highlight again.
